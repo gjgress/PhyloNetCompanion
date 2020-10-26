@@ -12,6 +12,7 @@ class ParamListDlg(QDialog):
     A>C, A>G, A>T, C>G, C>T and G>T, and values are values
     for these parameters. Both key and value should be string.
     """
+
     def __init__(self, currentList, parent=None):
         super(ParamListDlg, self).__init__(parent)
 
@@ -104,7 +105,9 @@ class ParamListDlg(QDialog):
 
         # Buttons
         cancel = QPushButton("Cancel")
+        cancel.setObjectName("cancel")
         set = QPushButton("Set")
+        set.setObjectName("set")
         set.setDefault(True)
         set.clicked.connect(self.accept)
         cancel.clicked.connect(self.reject)
@@ -139,59 +142,60 @@ class ParamListDlg(QDialog):
             pass
 
         try:
-            if self.freqAEdit.text().isEmpty():
+            if self.freqAEdit.text() == "":
                 raise emptyInputError
             else:
                 self.paramList["A"] = str(self.freqAEdit.text())
 
-            if self.freqCEdit.text().isEmpty():
+            if self.freqCEdit.text() == "":
                 raise emptyInputError
             else:
                 self.paramList["C"] = str(self.freqCEdit.text())
 
-            if self.freqGEdit.text().isEmpty():
+            if self.freqGEdit.text() == "":
                 raise emptyInputError
             else:
                 self.paramList["G"] = str(self.freqGEdit.text())
 
-            if self.freqTEdit.text().isEmpty():
+            if self.freqTEdit.text() == "":
                 raise emptyInputError
             else:
                 self.paramList["T"] = str(self.freqTEdit.text())
 
-            if self.transACEDit.text().isEmpty():
+            if self.transACEDit.text() == "":
                 raise emptyInputError
             else:
                 self.paramList["AC"] = str(self.transACEDit.text())
 
-            if self.transAGEDit.text().isEmpty():
+            if self.transAGEDit.text() == "":
                 raise emptyInputError
             else:
                 self.paramList["AG"] = str(self.transAGEDit.text())
 
-            if self.transATEDit.text().isEmpty():
+            if self.transATEDit.text() == "":
                 raise emptyInputError
             else:
                 self.paramList["AT"] = str(self.transATEDit.text())
 
-            if self.transCGEDit.text().isEmpty():
+            if self.transCGEDit.text() == "":
                 raise emptyInputError
             else:
                 self.paramList["CG"] = str(self.transCGEDit.text())
 
-            if self.transCTEDit.text().isEmpty():
+            if self.transCTEDit.text() == "":
                 raise emptyInputError
             else:
                 self.paramList["CT"] = str(self.transCTEDit.text())
 
-            if self.transGTEDit.text().isEmpty():
+            if self.transGTEDit.text() == "":
                 raise emptyInputError
             else:
                 self.paramList["GT"] = str(self.transGTEDit.text())
 
             QDialog.accept(self)
         except emptyInputError:
-            QMessageBox.warning(self, "Warning", "Please provide all parameters.", QMessageBox.Ok)
+            QMessageBox.warning(
+                self, "Warning", "Please provide all parameters.", QMessageBox.Ok)
 
     def getParamList(self):
         """

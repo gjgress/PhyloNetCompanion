@@ -4,8 +4,22 @@ from PyQt5 import QtGui
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets
 
-from module import SecondPage
 from module import BiAllelicMethodsPage
+from module import MCMCSEQ
+from module import TreeMethodsPage
+from module import NetworkMP
+from module import NetworkML
+from module import NetworkMLCV
+from module import NetworkMLBootstrap
+from module import NetworkMPL
+from module import MCMCGT
+from module import MCMCBiMarkers
+from module import MLEBiMarkers
+
+import PostProcessingModule.menu
+
+from functions import *
+from main import *
 
 
 def resource_path(relative_path):
@@ -13,111 +27,177 @@ def resource_path(relative_path):
     Refer to the location of a file at run-time.
     This function is from
     https://www.reddit.com/r/learnpython/comments/4kjie3/how_to_include_gui_images_with_pyinstaller/
-    For more information, visit https://pythonhosted.org/PyInstaller/runtime-information.html#run-time-information
+    # run-time-information
+    For more information, visit https://pythonhosted.org/PyInstaller/runtime-information.html
     """
     if hasattr(sys, '_MEIPASS'):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.abspath("."), relative_path)
 
 
-class Launcher(QtWidgets.QMainWindow):
+class Launcher(QtWidgets.QWizard):
+
+    Page_Intro = 1
+    Page_BiAllelic = 2
+    Page_DirectInf = 3
+    Page_GeneTreeEst = 4
+    Page_NetworkMP = 5
+    Page_NetworkML = 6
+    Page_NetworkML_CV = 7
+    Page_NetworkML_Boostrap = 8
+    Page_NetworkMPL = 9
+    Page_MCMCGT = 10
+    Page_MCMCBI = 11
+    Page_MLEBI = 12
+
     def __init__(self):
         super(Launcher, self).__init__()
 
+        self.setDefaultProperty("QTextEdit", "plainText",
+                                QtWidgets.QTextEdit.textChanged)
+        self.Intro = IntroPage()
+        self.BiAllelic = BiAllelicMethodsPage.BiAllelicMethodsPage()
+        self.DirectInf = MCMCSEQ.MCMCSEQPage()
+        self.GeneTreeEst = TreeMethodsPage.TreeMethodsPage()
+        self.NetworkMP = NetworkMP.NetworkMPPage()
+        self.NetworkML = NetworkML.NetworkMLPage()
+        self.NetworkMLCV = NetworkMLCV.NetworkMLCVPage()
+        self.NetworkML_Boostrap = NetworkMLBootstrap.NetworkMLBootstrapPage()
+        self.NetworkMPL = NetworkMPL.NetworkMPLPage()
+        self.MCMCGT = MCMCGT.MCMCGTPage()
+        self.MCMCBI = MCMCBiMarkers.MCMCBiMarkersPage()
+        self.MLEBI = MLEBiMarkers.MLEBiMarkersPage()
+
+        self.setPage(self.Page_Intro, self.Intro)
+        self.setPage(self.Page_DirectInf, self.DirectInf)
+        self.setPage(self.Page_BiAllelic, self.BiAllelic)
+        self.setPage(self.Page_GeneTreeEst, self.GeneTreeEst)
+        self.setPage(self.Page_NetworkMP, self.NetworkMP)
+        self.setPage(self.Page_NetworkML, self.NetworkML)
+        self.setPage(self.Page_NetworkML_CV, self.NetworkMLCV)
+        self.setPage(self.Page_NetworkML_Boostrap, self.NetworkML_Boostrap)
+        self.setPage(self.Page_NetworkMPL, self.NetworkMPL)
+        self.setPage(self.Page_MCMCGT, self.MCMCGT)
+        self.setPage(self.Page_MCMCBI, self.MCMCBI)
+        self.setPage(self.Page_MLEBI, self.MLEBI)
         self.initUI()
 
     def initUI(self):
         """
-        Initialize GUI.
+         GUI.
         """
-        wid = QtWidgets.QWidget()
-        self.setCentralWidget(wid)
+        #set window title and label
+        self.setWindowTitle("Phylonet") 
+        self.setWindowIcon(QIcon("module/logo.png"))
+        #set maximize and minimize options
+        flags = QtCore.Qt.WindowFlags(QtCore.Qt.CustomizeWindowHint | QtCore.Qt.WindowCloseButtonHint 
+                    | QtCore.Qt.WindowMaximizeButtonHint | QtCore.Qt.WindowMinimizeButtonHint)
+        #flags = QtCore.Qt.FramelessWindowHint
+        self.setWindowFlags(flags)
+        self.setModal(1)
+        #self.resize(1300, 1100)
+        self.setMinimumSize(1300, 1100)
+        bLayout = [QWizard.Stretch, QWizard.NextButton, QWizard.CustomButton1, QWizard.CustomButton2, QWizard.CancelButton, QWizard.BackButton]
+        self.setButtonLayout(bLayout)
 
-        # Menubar and action.
-        aboutAction = QtWidgets.QAction('About', self)
-        aboutAction.triggered.connect(self.aboutMessage)
-        aboutAction.setShortcut("Ctrl+A")
+        #set custom button options
+        self.setOption(QWizard.HaveCustomButton1, True)
+        self.setOption(QWizard.HaveCustomButton2, True)
 
-        menubar = self.menuBar()
-        menuMenu = menubar.addMenu('Menu')
-        menuMenu.addAction(aboutAction)
+        self.setButtonText(QWizard.CustomButton1, "&Use Again")
+        self.button(QWizard.CustomButton1).setVisible(False)
+  
+        self.setButtonText(QWizard.CustomButton2, "&Finish")
+        self.button(QWizard.CustomButton2).setVisible(False)
+
+    def nextId(self):
+        id = self.currentId()
+        if id == Launcher.Page_Intro:
+            if self.Intro.inputOption1.isChecked():
+                return self.Page_DirectInf
+            elif self.Intro.inputOption2.isChecked():
+                return self.Page_GeneTreeEst
+            elif self.Intro.inputOption3.isChecked():
+                return self.Page_BiAllelic
+            else:
+                # Page doesn't matter, just can't be finish, this way the next button still has an "id"
+                return self.Page_DirectInf
+        elif id == Launcher.Page_GeneTreeEst:
+            if self.GeneTreeEst.methods1.isChecked():
+                return self.Page_NetworkMP
+            elif self.GeneTreeEst.methods2.isChecked():
+                return self.Page_NetworkML
+            elif self.GeneTreeEst.methods3.isChecked():
+                return self.Page_NetworkML_CV
+            elif self.GeneTreeEst.methods4.isChecked():
+                return self.Page_NetworkML_Boostrap
+            elif self.GeneTreeEst.methods5.isChecked():
+                return self.Page_NetworkMPL
+            elif self.GeneTreeEst.methods6.isChecked():
+                return self.Page_MCMCGT
+            else:
+                return self.Page_NetworkMP  # Like above doesn't matter, cant be finish
+        elif id == Launcher.Page_BiAllelic:
+            if self.BiAllelic.methods1.isChecked():
+                return self.Page_MCMCBI
+            elif self.BiAllelic.methods2.isChecked():
+                return self.Page_MLEBI
+            else:
+                return self.Page_MCMCBI  # Like above doesn't matter, cant be finish
+        else:
+            return -1
+
+
+class IntroPage(QtWidgets.QWizardPage):
+    def __init__(self, parent=Launcher):
+        super(IntroPage, self).__init__()
+        self.initUI()
+
+    def initUI(self):
 
         # Queston label and two options
         questionLabel = QtWidgets.QLabel()
+        questionLabel.setObjectName("questionLabel")
         questionLabel.setText("What is your input data type?")
 
-        questionFont = QtGui.QFont()
-        questionFont.setPointSize(24)
-        questionFont.setFamily("Copperplate")
-        questionLabel.setFont(questionFont)  # Font of the question label.
+        self.inputOption1 = QtWidgets.QRadioButton(
+            "Multiple sequence alignments of unlinked loci (direct inference)")
+        self.inputOption2 = QtWidgets.QRadioButton("Gene tree estimates")
+        self.inputOption3 = QtWidgets.QRadioButton(
+            "Unlinked bi-allelic markers")
+        self.invisButton = QtWidgets.QCheckBox("")
+        self.registerField("invisButton*", self.invisButton)
+      #  self.registerField("alignBox*", self.alignBox)
+      #  self.registerField("biAllelicBox*", self.biAllelicBox)
 
-        self.alignBox = QtWidgets.QCheckBox("Multiple sequence alignments of unlinked loci", self)
-        self.biAllelicBox = QtWidgets.QCheckBox("Unlinked bi-allelic markers", self)
-
-        self.alignBox.stateChanged.connect(self.onChecked)
-        self.biAllelicBox.stateChanged.connect(self.onChecked)  # Implement mutually exclusive check boxes
-
-        checkBoxFont = QtGui.QFont()
-        checkBoxFont.setFamily("Times New Roman")
-        checkBoxFont.setPointSize(15)
-        self.alignBox.setFont(checkBoxFont)
-        self.biAllelicBox.setFont(checkBoxFont)  # Font of two checkboxes.
-
-        # OK and Cancel buttons
-        buttonBox = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
-        buttonBox.button(QtWidgets.QDialogButtonBox.Ok).setDefault(True)
-
-        buttonBox.button(QtWidgets.QDialogButtonBox.Cancel).clicked.connect(self.close)
-        buttonBox.button(QtWidgets.QDialogButtonBox.Ok).clicked.connect(self.okClicked)
-
-        # Image and Title
-        pix = QtGui.QPixmap(resource_path("logo.png"))
-        image = QtWidgets.QLabel(self)
-        image.setPixmap(pix)
-        lbl = QtWidgets.QLabel("PhyloNet")
-
-        titleFont = QtGui.QFont()
-        titleFont.setPointSize(24)
-        titleFont.setBold(True)
-        lbl.setFont(titleFont)  # Font of the PhyloNet title.
-
-        # Separation line
-        line = QtWidgets.QFrame(self)
-        line.setFrameShape(QtWidgets.QFrame.HLine)
-        line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.inputOption1.toggled.connect(self.onChecked)
+        self.inputOption2.toggled.connect(self.onChecked)
+        self.inputOption3.toggled.connect(self.onChecked)
 
         # Layouts
-        # Top level logo and title.
-        top = QtWidgets.QHBoxLayout()
-        top.addWidget(image)
-        top.addWidget(lbl)
-
         # Main vertical layout.
         vbox = QtWidgets.QVBoxLayout()
-        vbox.addLayout(top)
-        vbox.addWidget(line)
+        vbox.setObjectName("vbox")
+        vbox.setSpacing(30)
+
+        #info button gotta go
+        #vbox.addWidget(getInfoButton(self))
         vbox.addWidget(questionLabel)
-        vbox.addSpacing(20)
-        vbox.addWidget(self.alignBox)
-        vbox.addSpacing(20)
-        vbox.addWidget(self.biAllelicBox)
-        wid.setLayout(vbox)
+        vbox.addWidget(self.inputOption1, alignment=QtCore.Qt.AlignCenter)
+        vbox.addWidget(self.inputOption2, alignment=QtCore.Qt.AlignCenter)
+        vbox.addWidget(self.inputOption3, alignment=QtCore.Qt.AlignCenter)
 
-        # Bottom button box layout.
-        hbox = QtWidgets.QHBoxLayout()
-        hbox.addStretch()
-        hbox.addWidget(buttonBox)
+        self.setLayout(vbox)
 
-        vbox.addLayout(hbox)
-        vbox.setContentsMargins(50, 10, 50, 10)
-
-        menubar.setNativeMenuBar(False)
-        self.setWindowTitle('PhyloNetNEXGenerator')
-        self.setWindowIcon(QtGui.QIcon(resource_path("logo.png")))
+    def onChecked(self):
+        """
+        Process checkbox's stateChanged signal to implement mutual exclusion.
+        """
+        self.invisButton.setCheckState(True)
 
     def aboutMessage(self):
-        msg = QtWidgets.QMessageBox()
-        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
         msg.setText("PhyloNet is a tool designed mainly for analyzing, "
                     "reconstructing, and evaluating reticulate "
                     "(or non-treelike) evolutionary relationships, "
@@ -131,7 +211,7 @@ class Launcher(QtWidgets.QMainWindow):
                     "which is lead by Professor Luay Nakhleh (nakhleh@cs.rice.edu). "
                     "For more details related to this group please visit "
                     "http://bioinfo.cs.rice.edu.")
-        font = QtGui.QFont()
+        font = QFont()
         font.setPointSize(13)
         font.setFamily("Times New Roman")
         font.setBold(False)
@@ -139,37 +219,14 @@ class Launcher(QtWidgets.QMainWindow):
         msg.setFont(font)
         msg.exec_()
 
-    def onChecked(self):
-        """
-        Process checkbox's stateChanged signal to implement mutual exclusion.
-        """
-        if self.sender().text() == "Multiple sequence alignments of unlinked loci":
-            if not self.alignBox.isChecked():
-                pass
-            else:
-                self.biAllelicBox.setChecked(False)
-        elif self.sender().text() == "Unlinked bi-allelic markers":
-            if not self.biAllelicBox.isChecked():
-                pass
-            else:
-                self.alignBox.setChecked(False)
-                self.biAllelicBox.setChecked(True)
 
-    def okClicked(self):
-        if self.alignBox.isChecked():
-            self.newPage = SecondPage.SecondPage()
-            self.newPage.show()
-            self.close()
-        elif self.biAllelicBox.isChecked():
-            self.newPage = BiAllelicMethodsPage.BiAllelicMethodsPage()
-            self.newPage.show()
-            self.close()
-        else:
-            pass
-
+def openModule(self):
+    self.nexGenerator = module.launcher.Launcher()
+    self.nexGenerator.show()
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
+    app.setStyleSheet(style)
     ex = Launcher()
     ex.show()
     sys.exit(app.exec_())

@@ -35,8 +35,8 @@ class TaxamapDlg(QDialog):
         self.table.setRowCount(len(self.namespace))
         self.table.setColumnCount(2)
         header = self.table.horizontalHeader()
-        header.setResizeMode(0, QHeaderView.ResizeToContents)
-        header.setResizeMode(1, QHeaderView.Stretch)
+        header.setSectionResizeMode(0, QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.Stretch)
         self.table.setHorizontalHeaderItem(0, QTableWidgetItem("taxon"))
         self.table.setHorizontalHeaderItem(1, QTableWidgetItem("species"))
 
@@ -44,6 +44,11 @@ class TaxamapDlg(QDialog):
         for i in range(len(self.namespace)):
             self.table.setItem(i, 0, QTableWidgetItem(self.namespace[i].label))
             self.table.setItem(i, 1, QTableWidgetItem(self.currentMap[self.namespace[i].label]))
+
+        #Enable maximize and minimize window
+        flags = QtCore.Qt.WindowFlags(QtCore.Qt.CustomizeWindowHint | QtCore.Qt.WindowCloseButtonHint 
+                    | QtCore.Qt.WindowMaximizeButtonHint | QtCore.Qt.WindowMinimizeButtonHint)
+        self.setWindowFlags(flags)
 
         # Main layout
         topLevelLayout = QVBoxLayout()

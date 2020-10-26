@@ -2,10 +2,15 @@ import os
 import sys
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from PyQt5 import QtCore
+from PyQt5 import QtWidgets, QtCore, QtLocation
+from PyQt5.QtGui import QIcon, QPixmap
 
 import module.launcher
 import PostProcessingModule.menu
+
+from styling import *
+from functions import *
+
 
 def resource_path(relative_path):
     """
@@ -22,108 +27,137 @@ def resource_path(relative_path):
 class Main(QMainWindow):
     def __init__(self):
         super(Main, self).__init__()
-
         self.initUI()
 
     def initUI(self):
         """
         Initialize GUI.
         """
+        self.setWindowTitle("Phylonet")
+        self.setWindowIcon(QIcon("logo.png"))
+        flags = QtCore.Qt.WindowFlags(QtCore.Qt.CustomizeWindowHint | QtCore.Qt.WindowCloseButtonHint
+                                      | QtCore.Qt.WindowMinimizeButtonHint)
+        self.setWindowFlags(flags)
+
         wid = QWidget()
         self.setCentralWidget(wid)
+        self.setContentsMargins(50, 0, 10, 50)
+        ico = QIcon("info.svg")
 
-        # Menubar and action
-        aboutAction = QAction('About', self)
-        aboutAction.triggered.connect(self.aboutMessage)
-        aboutAction.setShortcut("Ctrl+A")
-
-        menubar = self.menuBar()
-        menuMenu = menubar.addMenu('Menu')
-        menuMenu.addAction(aboutAction)
+        infoButton = QPushButton(self)
+        infoButton.clicked.connect(self.aboutMessage)
+        infoButton.setIcon(ico)
+        infoButton.setFixedSize(60, 60)
+        infoButton.setIconSize(infoButton.size())
+        #infoButton.setStyleSheet("border: none;")
 
         # Buttons of two options
-        generateBtn = QPushButton("Generate input NEXUS file for PhyloNet", self)
-        postProcessBtn = QPushButton("Display results of PhyloNet commands", self)
-        generateBtn.setMinimumWidth(400)
+        generateBtn = QPushButton(
+            "Generate input NEXUS file for PhyloNet", self)
+        generateBtn.setObjectName("inputBtn")
+        postProcessBtn = QPushButton(
+            "Display results of PhyloNet commands", self)
+        postProcessBtn.setObjectName("outputBtn")
 
         generateBtn.clicked.connect(self.openModule)
         postProcessBtn.clicked.connect(self.openPostProcess)
 
-        # Image and Title
-        pix = QPixmap(resource_path("logo.png"))
-        image = QLabel(self)
-        image.setPixmap(pix)
-        lbl = QLabel("PhyloNet")
+        # Question
+        header = QLabel()
+        #header.setStyleSheet("margin-bottom: 50px;")
+        pix = QPixmap("header.png")
+        pix = pix.scaledToWidth(500)
+        header.setPixmap(pix)
 
-        titleFont = QFont()
-        titleFont.setPointSize(24)
-        titleFont.setBold(True)
-        lbl.setFont(titleFont)  # Font of the PhyloNet title.
+        questionLabel = QLabel("What would you like to do?")
+        questionLabel.setObjectName("introQuestion")
 
-        # Separation line
-        line = QFrame(self)
-        line.setFrameShape(QFrame.HLine)
-        line.setFrameShadow(QFrame.Sunken)
+        version = QLabel("Version 1.0")
+        version.setObjectName("version")
 
-        # Layouts
-        # Top level logo and title.
-        top = QHBoxLayout()
-        top.addStretch()
-        top.addWidget(image)
-        top.addWidget(lbl)
-        top.addStretch()
+        # main layout
+        mainLayout = QVBoxLayout()
+        mainLayout.addWidget(header, alignment=QtCore.Qt.AlignCenter)
+        mainLayout.addWidget(questionLabel, alignment=QtCore.Qt.AlignCenter)
+        mainLayout.addWidget(generateBtn, alignment=QtCore.Qt.AlignCenter)
+        mainLayout.addWidget(postProcessBtn, alignment=QtCore.Qt.AlignCenter)
+        mainLayout.setContentsMargins(250, 20, 250, 10)
 
-        # Main vertical layout.
+        # houses all widgets
         vbox = QVBoxLayout()
-        vbox.addLayout(top)
-        vbox.addWidget(line)
-        vbox.addWidget(generateBtn)
-        vbox.addWidget(postProcessBtn)
+        vbox.addWidget(infoButton)
+        vbox.addLayout(mainLayout)
+        vbox.addWidget(version, alignment=QtCore.Qt.AlignCenter)
         wid.setLayout(vbox)
 
-        vbox.setContentsMargins(50, 10, 50, 10)
+        # menubar.setNativeMenuBar(False)
+        # self.setWindowTitle('PhyloNetCompanion')
+        # self.setWindowIcon(QIcon(resource_path("logo.png")))
 
-        menubar.setNativeMenuBar(False)
-        self.setWindowTitle('PhyloNetCompanion')
-        self.setWindowIcon(QIcon(resource_path("logo.png")))
+    def link(self, linkStr):
+        """
+        Open the website of PhyloNet if user clicks on the hyperlink.
+        """
+        QDesktopServices.openUrl(QtCore.QUrl(linkStr))
 
     def aboutMessage(self):
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Information)
-        msg.setText("PhyloNet is a tool designed mainly for analyzing, "
-                    "reconstructing, and evaluating reticulate "
-                    "(or non-treelike) evolutionary relationships, "
-                    "generally known as phylogenetic networks. Various "
-                    "methods that we have developed make use of techniques "
-                    "and tools from the domain of phylogenetic trees, and "
-                    "hence the PhyloNet package includes several tools for "
-                    "phylogenetic tree analysis. PhyloNet is released under "
-                    "the GNU General Public License. \n\nPhyloNet is designed, "
-                    "implemented, and maintained by Rice's BioInformatics Group, "
-                    "which is lead by Professor Luay Nakhleh (nakhleh@cs.rice.edu). "
-                    "For more details related to this group please visit "
-                    "http://bioinfo.cs.rice.edu.")
-        font = QFont()
-        font.setPointSize(13)
-        font.setFamily("Times New Roman")
-        font.setBold(False)
+        msg = QDialog()
+        msg.setWindowTitle("Phylonet")
+        msg.setWindowIcon(QIcon("logo.png"))
+        flags = QtCore.Qt.WindowFlags(
+            QtCore.Qt.CustomizeWindowHint | QtCore.Qt.WindowCloseButtonHint)
+        msg.setWindowFlags(flags)
+        msg.setObjectName("aboutMessage")
 
-        msg.setFont(font)
+        vbox = QVBoxLayout()
+        text = QLabel("PhyloNet is a tool designed mainly for analyzing, "
+                      "reconstructing, and evaluating reticulate "
+                      "(or non-treelike) evolutionary relationships, "
+                      "generally known as phylogenetic networks. Various "
+                      "methods that we have developed make use of techniques "
+                      "and tools from the domain of phylogenetic trees, and "
+                      "hence the PhyloNet package includes several tools for "
+                      "phylogenetic tree analysis. PhyloNet is released under "
+                      "the GNU General Public License. \n\nPhyloNet is designed, "
+                      "implemented, and maintained by Rice's BioInformatics Group, "
+                      "which is lead by Professor Luay Nakhleh (nakhleh@cs.rice.edu). ")
+        text.setWordWrap(True)
+        #text.setStyleSheet("padding: 60px 100px 10px 100px;")
+        text.setObjectName("infoButton")
+
+        hyperlink = QLabel()
+        hyperlink.setText('For more details related to this group please visit '
+                          '<a href="http://bioinfo.cs.rice.edu">'
+                          'http://bioinfo.cs.rice.edu</a>.')
+        hyperlink.linkActivated.connect(self.link)
+        hyperlink.setObjectName("infoButton")
+        #hyperlink.setStyleSheet("padding: 10px 100px 80px 100px;")
+
+        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok)
+        buttonBox.clicked.connect(msg.accept)
+        vbox.addWidget(text)
+        vbox.addWidget(hyperlink)
+        vbox.addWidget(buttonBox)
+        msg.setLayout(vbox)
         msg.exec_()
 
     def openModule(self):
         self.nexGenerator = module.launcher.Launcher()
         self.nexGenerator.show()
-        self.close()
+        # Closes main window so its cleaner for user
+        # self.window().setVisible(False)
 
     def openPostProcess(self):
         self.outputSummarizer = PostProcessingModule.menu.MenuPage()
         self.outputSummarizer.show()
-        self.close()
+        # same as above
+        # self.window().setVisible(False)
 
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
+    os.environ['QT_FONT_DPI'] = '192'
+    app = QtWidgets.QApplication(sys.argv)
+    app.setStyleSheet(style())
     ex = Main()
     ex.show()
     sys.exit(app.exec_())
